@@ -1,7 +1,7 @@
 import whisper
 import warnings
 
-# Ignorer l'avertissement concernant FP16
+# Ignore  FP16
 warnings.filterwarnings("ignore", message="FP16 is not supported on CPU; using FP32 instead")
 
 model = whisper.load_model("turbo")
