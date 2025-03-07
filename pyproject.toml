@@ -1,0 +1,16 @@
+[project]
+name = "whispy"
+version = "0.1.0"
+description = "whispy packages"
+authors = [
+    {name = "LNWatta",email = "helene.finot@le-campus-numerique.fr"}
+]
+readme = "README.md"
+requires-python = "3.10.0"
+dependencies = [
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
