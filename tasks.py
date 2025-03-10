@@ -6,11 +6,15 @@ from celery import shared_task
 flask_app = create_app()
 celery_app = flask_app.extensions["celery"]
 
+# Celery shared task to transcript audio
 @shared_task(ignore_result=False)
 def transcribe_audio(file_path: str) -> str:
     try:
-        model = whisper.load_model("turbo")
+        # Load whisper model 
+        model = whisper.load_model("tiny")
+        # Execute transcription 
         result = model.transcribe(file_path)
+        # Return trancription result as text
         return result["text"]
     except Exception as e:
         return f"Error during transcription: {str(e)}"
