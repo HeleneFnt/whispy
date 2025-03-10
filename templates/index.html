@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Home page</title>
+</head>
+
+<body>
+    <h1>Whispy Tiny Transcription</h1>
+<form id="upload-form" method="post" enctype="multipart/form-data">
+    <label for="file">Choose an audio file:</label>
+    <input type="file" id="file" name="file" required>
+    <button type="submit">Upload</button>
+</form>
+
+<!-- Div element to display the task status -->
+<div id="result">Status: waiting for file upload...</div>
+
+<!-- Button to view the transcription (initially hidden) -->
+<button id="view-transcription" style="display: none;">View Transcription</button>
+
+<!-- Div element to display the transcription text -->
+<div id="transcription"></div>
+
+<!-- JavaScript to handle form submission, polling, and display of transcription -->
+<script>
+    // Get references to HTML elements
+    const form = document.getElementById('upload-form');
+    const resultDiv = document.getElementById('result');
+    const viewBtn = document.getElementById('view-transcription');
+    const transcriptionDiv = document.getElementById('transcription');
+    let taskResult = null; // To store the transcription text
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault(); // Prevent default form submission
+
+        // Indicate file upload in progress
+        resultDiv.textContent = "Uploading file...";
+
+        // Prepare the form data for the POST request
+        const formData = new FormData(form);
+
+        // Send POST request to trigger the transcription task
+        const response = await fetch('/trigger_task', {
+            method: 'POST',
+            body: formData
+        });
+        const data = await response.json();
+        const resultId = data.result_id;
+
+        resultDiv.textContent = "Task submitted. Waiting for transcription...";
+
+        // Polling function to check task status every 2 seconds
+        const pollTaskStatus = async () => {
+            const res = await fetch(`/get_result?result_id=${resultId}`);
+            const taskData = await res.json();
+
+            if (taskData.status === 'Running') {
+                resultDiv.textContent = "Status: Running...";
+            } else if (taskData.status === 'Completed') {
+                // Store the transcription text and update the status
+                taskResult = taskData.result;
+                resultDiv.textContent = "Status: Completed!";
+                // Display the button to view the transcription
+                viewBtn.style.display = "inline-block";
+                clearInterval(pollInterval);
+            } else if (taskData.status === 'Error') {
+                resultDiv.textContent = "Error: " + taskData.error_message;
+                clearInterval(pollInterval);
+            }
+        };
+
+        // Start polling every 2 seconds
+        const pollInterval = setInterval(pollTaskStatus, 2000);
+    });
+
+    // When the "View Transcription" button is clicked, display the transcription text
+    viewBtn.addEventListener('click', () => {
+        if (taskResult) {
+            transcriptionDiv.style.display = "block";
+            transcriptionDiv.textContent = taskResult;
+        }
+    });
+</script>
+</body>
+
+</html>
